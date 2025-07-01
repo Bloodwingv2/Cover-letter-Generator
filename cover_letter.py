@@ -7,6 +7,7 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 import subprocess
 import sys
+from datetime import datetime
 
 def get_job_description_from_cli():
     """Gets the job description from a command-line argument or prompts for multi-line input."""
@@ -26,14 +27,15 @@ def generate_cover_letter(job_description, api_key):
         messages=[
             {
                 "role": "user",
-                "content": f"""Generate a professional cover letter based on this job description. The cover letter must be exactly 1 page, maintain a formal, enthusiastic, and polished tone, and preserve placeholders like [Organization Name], [Email Address], [Phone Number], and [Name].
+                "content": f"""Generate a professional cover letter based on this job description. The cover letter must be exactly 1 page, maintain a formal, enthusiastic, and polished tone, and preserve placeholders like [Organization Name], [Email Address], [Phone Number], and [Name], Additionally The output must contain only the letter content, with no introductory or explanatory text. Do not include phrases like "Here is..." or "Below is...".
 
-Structure the letter into 3 main paragraphs:
+Structure the letter into 4 main paragraphs:
 1. Opening paragraph: Explain how the applicant found out about the job and express interest in applying.
 2. Second paragraph: Introduce the applicant briefly, mention a relevant event or experience, and highlight key skills or attributes.
-3. Final paragraph: Share a past experience (e.g., volunteering), describe technical and soft skills, and express confidence in their suitability for the role. Add a closing paragraph inviting the reader for a personal meeting and providing contact options.
+3. Third paragraph: Share a past experience (e.g., volunteering), describe technical and soft skills, and express confidence in their suitability for the role.
+4. Final paragraph: Add a closing paragraph inviting the reader for a personal meeting and providing the E-Mail address for further communication.
 
-The salutation should begin with 'Dear [Hiring Manager Name],'. The closing should be 'Best regards,' followed by '[Your Name]'.
+The salutation should begin with 'Dear Hiring Team,'. The closing should be 'Best regards,' followed by '[Your Name]'.
 
 Ensure to use placeholders like [Your Name], [Your Address], [Your City, Postal Code], [Your Email Address], [Your Phone Number], [Your LinkedIn Profile], [Date], [Hiring Manager Name], [Hiring Manager Title], [Company Name], [Company Address], [Company City, Postal Code], [Job Title] where appropriate, and do not fill them in.
 
@@ -60,7 +62,22 @@ Job Description:
 
 import time
 
-def create_docx(cover_letter_text):
+def placeholder_mapping():
+    name = "Mirang Bhandari"
+    address = "XYZ"
+    Citypost = "Mumbai, 400001"
+    Email = "Bhandarimirang03@gmail.com" 
+    number = "9321692088"
+    linkedin = "www.linkedin.com/in/mirangbhandari"
+    today = datetime.today()
+    formatted_date = today.strftime("%B %d, %Y") 
+    
+    return (name,address, Citypost, Email, number, linkedin, formatted_date)
+    
+    
+    
+    
+def create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date):
     """Creates a .docx file with professional formatting, ensuring it fits on one page."""
     document = Document()
     
@@ -76,7 +93,7 @@ def create_docx(cover_letter_text):
     style = document.styles['Normal']
     font = style.font
     font.name = 'Calibri'
-    font.size = Pt(11)
+    font.size = Pt(11.5)
 
     # Set line spacing for the entire document
     paragraph_format = style.paragraph_format
@@ -94,21 +111,42 @@ def create_docx(cover_letter_text):
     
     # Name
     name_paragraph = cell.add_paragraph()
-    name_run = name_paragraph.add_run('[Your Name]')
+    name_run = name_paragraph.add_run(name)
     name_run.bold = True
     name_run.font.size = Pt(24) # Larger font for name
     name_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Contact Info
     contact_info_paragraph = cell.add_paragraph()
-    contact_info_run = contact_info_paragraph.add_run('[Your Address], [Your City, Postal Code]\n[Your Email Address] | [Your Phone Number] | [Your LinkedIn Profile]')
+    contact_info = f"{address}, {Citypost} | {Email} | {number} | {linkedin}"
+    contact_info_run = contact_info_paragraph.add_run(contact_info)
     contact_info_run.font.size = Pt(12) # Slightly larger font for contact info
     contact_info_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
+    # Replace all text containing place holders with actual values
+    replacements = {
+    "[Your Name]": name,
+    "[Your Address]": address,
+    "[Your City, Postal Code]": Citypost,
+    "[Email Address]": Email,
+    "[Phone Number]": number,
+    "[Your LinkedIn Profile]": linkedin,
+    "[Date]": date
+    }
+
+# Perform replacements
+    for placeholder, value in replacements.items():
+        cover_letter_text = cover_letter_text.replace(placeholder, value)
     
     # Add some space after the header box
     document.add_paragraph().add_run().add_break()
 
-    # Add Date (handled by Groq API content)
+    # Add Date
+    date_paragraph = document.add_paragraph()
+    date_paragraph.add_run(time.strftime("%B %d, %Y"))
+    date_paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+    # Add Recipient Information (handled by Groq API content)
     # Add Recipient Information (handled by Groq API content)
 
     # Add content with compact spacing
@@ -159,7 +197,9 @@ def main():
     
     print("\nGenerating cover letter...")
     
-    docx_path = create_docx(cover_letter_text)
+    name, address, Citypost, Email, number, linkedin, date = placeholder_mapping()
+    
+    docx_path = create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date)
     print(f"Successfully created DOCX: {docx_path}")
     
     pdf_path = convert_to_pdf(docx_path)
