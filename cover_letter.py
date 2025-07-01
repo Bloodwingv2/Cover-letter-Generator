@@ -37,7 +37,7 @@ Structure the letter into 4 main paragraphs:
 
 The salutation should begin with 'Dear Hiring Team,'. The closing should be 'Best regards,' followed by '[Your Name]'.
 
-Ensure to use placeholders like [Your Name], [Your Address], [Your City, Postal Code], [Your Email Address], [Your Phone Number], [Your LinkedIn Profile], [Date], [Hiring Manager Name], [Hiring Manager Title], [Company Name], [Company Address], [Company City, Postal Code], [Job Title] where appropriate, and do not fill them in.
+Ensure to use placeholders and only use these placeholders [Your Name], [Your Address], [Your City, Postal Code], [Email Address], [Phone Number], [Your LinkedIn Profile], [Date], [Company Name] where appropriate, and do not fill them in.
 
 Job Description:
 
@@ -64,20 +64,21 @@ import time
 
 def placeholder_mapping():
     name = "Mirang Bhandari"
-    address = "XYZ"
-    Citypost = "Mumbai, 400001"
+    address = "Mumbai, Maharashtra, India"
+    Citypost = "400001"
     Email = "Bhandarimirang03@gmail.com" 
     number = "9321692088"
     linkedin = "www.linkedin.com/in/mirangbhandari"
+    companyname = "Google"
     today = datetime.today()
     formatted_date = today.strftime("%B %d, %Y") 
     
-    return (name,address, Citypost, Email, number, linkedin, formatted_date)
+    return (name,address, Citypost, Email, number, linkedin, formatted_date, companyname)
     
     
     
     
-def create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date):
+def create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date, companyname):
     """Creates a .docx file with professional formatting, ensuring it fits on one page."""
     document = Document()
     
@@ -131,7 +132,8 @@ def create_docx(cover_letter_text, name, address, Citypost, Email, number, linke
     "[Email Address]": Email,
     "[Phone Number]": number,
     "[Your LinkedIn Profile]": linkedin,
-    "[Date]": date
+    "[Date]": date,
+    "[Company Name]": companyname  
     }
 
 # Perform replacements
@@ -197,9 +199,9 @@ def main():
     
     print("\nGenerating cover letter...")
     
-    name, address, Citypost, Email, number, linkedin, date = placeholder_mapping()
+    name, address, Citypost, Email, number, linkedin, date, companyname = placeholder_mapping()
     
-    docx_path = create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date)
+    docx_path = create_docx(cover_letter_text, name, address, Citypost, Email, number, linkedin, date, companyname)
     print(f"Successfully created DOCX: {docx_path}")
     
     pdf_path = convert_to_pdf(docx_path)
